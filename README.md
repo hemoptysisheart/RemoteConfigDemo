@@ -15,4 +15,13 @@
 
 ## 개발환경
 
-TBD
+1. Firebase 프로젝트 생성.
+    - [https://console.firebase.google.com/project/remoteconfigdemo-f957c/overview]
+2. [Firebase CLI](https://firebase.google.com/docs/cli) 설치.
+    - Homebrew : `brew install firebase-cli`
+3. `cd firebase`
+4. `firebase login` : CLI 인증.
+5. `firebase init`
+    - Hosting만 사용 설정.
+6. `firebase deploy --only hosting`
+    - [https://remoteconfigdemo-f957c.web.app]에 접속해서 확인.
