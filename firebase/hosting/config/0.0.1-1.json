@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "versionName": "0.0.1",
+    "versionCode": 1,
+    "track": "INTERNAL"
+  },
+  "payload": {
+    "featureA": false
+  }
+}
