@@ -9,6 +9,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.Duration
+import java.time.Instant
 
 class RemoteConfigLoaderImpl(
     val endpoint: Uri,
@@ -18,9 +20,14 @@ class RemoteConfigLoaderImpl(
 ) : RemoteConfigLoader {
     companion object {
         private val TAG = RemoteConfigLoaderImpl::class.simpleName
+
+        val CACHE_EXPIRE = Duration.ofMillis(1)
     }
 
     private val api: ConfigApi
+
+    private var cachedAt: Instant = Instant.MIN
+    private var cache: RemoteConfig? = null
 
     init {
         val builder = OkHttpClient.Builder()
@@ -39,25 +46,27 @@ class RemoteConfigLoaderImpl(
     }
 
     override suspend fun load(): RemoteConfig {
-        Log.i(TAG, "#load called.")
+        if (null == cache || Instant.now() > cachedAt.plus(CACHE_EXPIRE)) {
+            Log.d(TAG, "#load cache fail.")
 
-        val response = api.load("$versionName-$versionCode")
-        val config = RemoteConfig(
-            response.meta.let {
-                Meta(
-                    it?.versionName ?: throw NullPointerException("versionName"),
-                    it.versionCode ?: throw NullPointerException("versionCode"),
-                    it.track ?: throw NullPointerException("track")
-                )
-            },
-            response.payload.let {
+            val response = api.load("$versionName-$versionCode")
+            cachedAt = Instant.now()
+            cache = RemoteConfig(
+                response.meta.let {
+                    Meta(
+                        it?.versionName ?: throw NullPointerException("versionName"),
+                        it.versionCode ?: throw NullPointerException("versionCode"),
+                        it.track ?: throw NullPointerException("track")
+                    )
+                },
                 Payload(
-                    it?.featureA ?: throw NullPointerException("featureA")
+                    response.payload?.featureA ?: throw NullPointerException("featureA")
                 )
-            }
-        )
+            )
+            Log.d(TAG, "#load cached at $cachedAt")
+        }
 
-        Log.i(TAG, "#load return : $config")
-        return config
+        Log.d(TAG, "#load return : $cache")
+        return cache!!
     }
 }

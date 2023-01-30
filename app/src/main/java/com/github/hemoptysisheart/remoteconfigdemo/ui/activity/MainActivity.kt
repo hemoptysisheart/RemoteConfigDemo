@@ -15,11 +15,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.github.hemoptysisheart.remoteconfigdemo.R
+import com.github.hemoptysisheart.remoteconfigdemo.client.RemoteConfigLoader
+import com.github.hemoptysisheart.remoteconfigdemo.client.dto.RemoteConfig
 import com.github.hemoptysisheart.remoteconfigdemo.ui.theme.RemoteConfigDemoTheme
 import com.github.hemoptysisheart.remoteconfigdemo.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,12 +55,17 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "test", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = stringResource(id = R.string.description), fontSize = 24.sp)
+        Spacer(modifier = Modifier.height(20.dp))
 
         config?.payload?.also { cfg ->
             if (cfg.featureA) {
-                Button(onClick = { /*TODO*/ }, modifier = Modifier.padding(10.dp)) {
+                Button(
+                    onClick = {
+                        Log.d("Compose", "#featureA.onClick called.")
+                    },
+                    modifier = Modifier.padding(10.dp)
+                ) {
                     Text(text = "Feature A")
                 }
             }
@@ -71,7 +79,11 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
 fun preview_MainScreen() {
     RemoteConfigDemoTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-            MainScreen()
+            MainScreen(MainViewModel(object : RemoteConfigLoader {
+                override suspend fun load(): RemoteConfig {
+                    TODO("Not yet implemented")
+                }
+            }))
         }
     }
 }
